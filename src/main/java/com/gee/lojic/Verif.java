@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Verif {
     
     private String content,key,file;
+    float percentage;
     
     public String getContent(){
         return this.content;
@@ -41,5 +42,14 @@ public class Verif {
     
     public void setKey(String key){
         this.key = key;
+    }
+    
+        
+    public float getPercentage(){
+        return this.percentage;
+    }
+    
+    public void setPercentage(float percentage){
+        this.percentage = percentage;
     }
 }

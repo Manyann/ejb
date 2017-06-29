@@ -16,17 +16,27 @@ import javax.jms.MessageListener;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import com.gee.model.DicoDAO;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import static javax.ws.rs.client.Entity.json;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -89,6 +99,7 @@ public class MessageProcessor implements MessageListener {
     // Méthode permettant de voir si le fichier est en français
     public void isItFrench(List<Dictionnaire> wordList, Verif verif){
         int frenchWordCount = 0;
+        float percentage;
         String[] exploded = verif.getContent().split(" ");// array des mots de notre texte
         
         for( int ct = 0 ; ct < exploded.length ; ct++){  // on boucle sur notre array de mot
@@ -99,10 +110,11 @@ public class MessageProcessor implements MessageListener {
             }
         }
         
-        if(((float)frenchWordCount / (float)exploded.length) >= 0.5){ // pourcentage de fiabilité
+        percentage = (float)frenchWordCount / (float)exploded.length;
+        if(percentage >= 0.5){ // pourcentage de fiabilité
             String email = findEmail(exploded);
-            createReport(email, frenchWordCount, exploded.length, verif);
-            //sendInfoToWcf(verif);
+            //createReport(email,percentage, verif);
+            sendInfoToWcf(verif,percentage,email);
         }
     }
     
@@ -121,9 +133,8 @@ public class MessageProcessor implements MessageListener {
     }
     
     // Ici on crée le fichier txt rapport , qu'on renverra au wcf
-    public void createReport(String mail, int hmfw, int twc, Verif verif){
+    public void createReport(String mail, float percentage, Verif verif){
         PrintWriter writer = null;
-        float percentage = (float)hmfw / (float)twc * 100;
         
         try {
             writer = new PrintWriter("../report/report.txt", "UTF-8");
@@ -143,11 +154,18 @@ public class MessageProcessor implements MessageListener {
     }
     
     // On envoit tout au wcf
-    public void sendInfoToWcf(Verif verif){
+    public void sendInfoToWcf(Verif verif,float percentage, String email){
+        verif.setPercentage(percentage);
+        
+        String str = "{\" file \" : \""+verif.getFile()+"\", \"key\" : \""+
+                verif.getKey()+"\", \"text\" : \""+verif.getFile()+"\","
+                + "\"pourcentage\" : \""+verif.getPercentage()+"\"}";
+        
         Client client = ClientBuilder.newClient();
-        WebTarget myResource = client.target("http://example.com/webapi/write");
-        TrackingNumber trackingNumber = myResource.request(MediaType.APPLICATION_XML)
-                                           .post(Entity.json(verif), TrackingNumber.class);
+        WebTarget myResource = client.target("http://192.168.30.12:8889/REST/soluce/");
+        Response resp = myResource.request(MediaType.APPLICATION_JSON)
+                .post(json(verif));
+
     }
     
 }
