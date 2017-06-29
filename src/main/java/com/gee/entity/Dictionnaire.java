@@ -22,8 +22,8 @@ import javax.persistence.*;
 @NamedQueries({ // Ici l'ensemble des requetes utilisés dans le programme
     @NamedQuery(name="Dictionnaire.findBySlice", 
         query="SELECT d FROM Dictionnaire d where d.word LIKE CONCAT('%',:slice,'%')") ,
-    @NamedQuery(name="Dictionnaire.findOneWord", 
-        query="SELECT d FROM Dictionnaire d where d.word = :input"),
+    @NamedQuery(name="Dictionnaire.findForFrench", 
+        query="SELECT d FROM Dictionnaire d where d.word = :slice"),
     @NamedQuery(name="Dictionnaire.findAllDico", 
         query="SELECT d FROM Dictionnaire d ")
 })

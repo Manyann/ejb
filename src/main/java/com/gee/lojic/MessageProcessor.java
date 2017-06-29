@@ -89,18 +89,26 @@ public class MessageProcessor implements MessageListener {
             System.out.println(e);         
         }
         
-        //récupération du dico de mots
-        List<Dictionnaire> wordList = dao.findAllDico();
-        
-        isItFrench(wordList,verif);
+        isItFrench(verif);
     }
     
     
     // Méthode permettant de voir si le fichier est en français
-    public void isItFrench(List<Dictionnaire> wordList, Verif verif){
+    public void isItFrench(Verif verif){
+                
+        //récupération du dico de mots
+        List<Dictionnaire> wordList = dao.findAllDico();
         int frenchWordCount = 0;
         float percentage;
         String[] exploded = verif.getContent().split(" ");// array des mots de notre texte
+        
+        
+       /* for( int ct = 0 ; ct < exploded.length ; ct++){  // on boucle sur notre array de mot  
+            System.out.println(dao.findForFrench(exploded[ct]));
+            if(dao.findForFrench(exploded[ct]) != null){   // si ya correspondance on add +1
+               frenchWordCount ++;
+            }
+        }*/
         
         for( int ct = 0 ; ct < exploded.length ; ct++){  // on boucle sur notre array de mot
             for(Dictionnaire d : wordList){ // on boucle sur les mots de notre dico 
@@ -157,14 +165,12 @@ public class MessageProcessor implements MessageListener {
     public void sendInfoToWcf(Verif verif,float percentage, String email){
         verif.setPercentage(percentage);
         
-        String str = "{\" file \" : \""+verif.getFile()+"\", \"key\" : \""+
-                verif.getKey()+"\", \"text\" : \""+verif.getFile()+"\","
-                + "\"pourcentage\" : \""+verif.getPercentage()+"\"}";
-        
+        String str = "{\" file \" : \""+verif.getFile()+"\", \"key\" : \""+verif.getKey()+"\", \"text\" : \""+verif.getContent()+"\",\"pourcentage\" : \""+verif.getPercentage()+"\",\"email\" : \""+email+"\"}";
+        System.out.println(str);
         Client client = ClientBuilder.newClient();
-        WebTarget myResource = client.target("http://192.168.30.12:8889/REST/soluce/");
+        WebTarget myResource = client.target("http://192.168.30.16:8088/HTTP/soluce");
         Response resp = myResource.request(MediaType.APPLICATION_JSON)
-                .post(json(verif));
+                .post(json(str));
 
     }
     

@@ -38,6 +38,16 @@ public class DicoDAO {
         return results;   
     }
     
+     public List<Dictionnaire> findForFrench(String slice){System.out.println(slice);
+        TypedQuery<Dictionnaire> query = em.createNamedQuery("Dictionnaire.findForFrench",Dictionnaire.class)
+                            .setParameter("slice", slice);       
+        
+        List<Dictionnaire> results = query.getResultList();
+        System.out.println(results);          
+        
+        return results;   
+    }
+    
     public List<Dictionnaire> findAllDico(){
         TypedQuery<Dictionnaire> query = em.createNamedQuery("Dictionnaire.findAllDico",Dictionnaire.class);
         List<Dictionnaire> results = query.getResultList();
